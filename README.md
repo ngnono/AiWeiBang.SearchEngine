@@ -24,9 +24,9 @@ searchengine('Rainbow');
 MIT © [lianghongpeng](github.com/ngnono)
 
 
-[npm-url]: https://npmjs.org/package/searchengine
-[npm-image]: https://badge.fury.io/js/searchengine.svg
-[travis-url]: https://travis-ci.org/ngnono/searchengine
-[travis-image]: https://travis-ci.org/ngnono/searchengine.svg?branch=master
-[daviddm-url]: https://david-dm.org/ngnono/searchengine.svg?theme=shields.io
-[daviddm-image]: https://david-dm.org/ngnono/searchengine
+[npm-url]: https://npmjs.org/package/AiWeiBang.SearchEngine
+[npm-image]: https://badge.fury.io/js/AiWeiBang.SearchEngine.svg
+[travis-url]: https://travis-ci.org/ngnono/AiWeiBang.SearchEngine
+[travis-image]: https://travis-ci.org/ngnono/AiWeiBang.SearchEngine.svg?branch=master
+[daviddm-url]: https://david-dm.org/ngnono/AiWeiBang.SearchEngine.svg?theme=shields.io
+[daviddm-image]: https://david-dm.org/ngnono/AiWeiBang.SearchEngine
