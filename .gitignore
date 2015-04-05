@@ -81,7 +81,7 @@ crashlytics-build.properties
 #bower
 bower_components
 
-config/default.*
+#config/default.*
 config/development.*
 config/production.*
 config/test.*
