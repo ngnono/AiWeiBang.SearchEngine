@@ -1,0 +1,174 @@
+{
+    "config":"default"  ,
+
+    "indices_types": {
+        "articles": "articles",
+        "articles_columns": "articles_columns"
+    },
+
+    "indices_mapping": {
+        "articles": {
+            "body": {
+                "_source": {
+                    "compress": true
+                },
+                "properties": {
+                    "article_id": {
+                        "type": "integer",
+                        "index": "not_analyzed",
+                        "store": "no"
+                    },
+                    "article_title": {
+                        "type": "string",
+                        "store": "yes",
+                        "index":"analyzed",
+                        "indexAnalyzer": "ik_max_word",
+                        "searchAnalyzer": "ik_smart"
+                    },
+                    "summary": {
+                        "type": "string",
+                        "store": "yes",
+                        "index":"analyzed",
+                        "indexAnalyzer": "ik_smart_html",
+                        "searchAnalyzer": "ik_smart"
+                    },
+                    "source_url": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "media_url": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "media_local": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "media_local_tumb": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "post_date": {
+                        "type": "date",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "post_time": {
+                        "type": "date",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "post_user_id": {
+                        "type": "integer",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "post_user_ext": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "msg_type": {
+                        "type": "byte",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "src_url": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "wechat_biz": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "record_time": {
+                        "type": "date",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "sort_index": {
+                        "type": "short",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "enabled": {
+                        "type": "boolean",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "hits": {
+                        "type": "integer",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "show_cover_pic": {
+                        "type": "boolean",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "article_index": {
+                        "type": "byte",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "read_num": {
+                        "type": "integer",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "lik_num": {
+                        "type": "integer",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "num_update_time": {
+                        "type": "date",
+                        "store": "no",
+                        "index": "not_analyzed"
+                    },
+                    "content": {
+                        "type": "string",
+                        "store": "no",
+                        "index":"analyzed",
+                        "indexAnalyzer": "ik_smart_html",
+                        "searchAnalyzer": "ik_smart"
+                    }
+                }
+            }
+        },
+
+        "articles_columns": {
+            "body": {
+                "_parent": {
+                    "type": "articles"
+                },
+                "_source": {
+                    "compress": true
+                },
+                "properties": {
+                    "article_id": {
+                        "type": "integer",
+                        "index": "not_analyzed",
+                        "store": "no"
+                    },
+                    "column_id": {
+                        "type": "integer",
+                        "index": "not_analyzed",
+                        "store": "no"
+                    }
+                }
+            }
+        }
+    }
+}
