@@ -84,7 +84,9 @@ bower_components
 #config/default.*
 config/development.*
 config/production.*
-config/test.*
+config/default.*
+
+config
 
 #grunt
 .tmp
