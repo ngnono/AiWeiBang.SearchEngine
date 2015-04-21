@@ -284,9 +284,11 @@ module.exports = function (router) {
                 return;
             }
 
+            console.log(result) ;
             //{items,total}
             var items = esClient.resultResolve(result);
 
+            console.log(items);
             /**--------------------------------------------
              * 处理facet
              * {
