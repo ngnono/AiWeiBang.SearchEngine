@@ -23,14 +23,16 @@
                         "store": "yes",
                         "index":"analyzed",
                         "indexAnalyzer": "ik_max_word",
-                        "searchAnalyzer": "ik_smart"
+                        "searchAnalyzer": "ik_smart",
+                        "copy_to": "q"
                     },
                     "summary": {
                         "type": "string",
                         "store": "yes",
                         "index":"analyzed",
                         "indexAnalyzer": "ik_smart_html",
-                        "searchAnalyzer": "ik_smart"
+                        "searchAnalyzer": "ik_smart" ,
+                        "copy_to": "q"
                     },
                     "source_url": {
                         "type": "string",
@@ -70,7 +72,8 @@
                     "post_user_ext": {
                         "type": "string",
                         "store": "no",
-                        "index": "not_analyzed"
+                        "index": "not_analyzed",
+                        "copy_to": "q"
                     },
                     "msg_type": {
                         "type": "byte",
@@ -139,7 +142,15 @@
                     },
                     "content": {
                         "type": "string",
-                        "store": "no",
+                        "store": "yes",
+                        "index":"analyzed",
+                        "indexAnalyzer": "ik_smart_html",
+                        "searchAnalyzer": "ik_smart",
+                        "copy_to": "q"
+                    },
+                    "q":{
+                        "type":"string",
+                        "store":"no",
                         "index":"analyzed",
                         "indexAnalyzer": "ik_smart_html",
                         "searchAnalyzer": "ik_smart"

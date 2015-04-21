@@ -71,10 +71,10 @@ var _qeruyParser = function (query) {
         facets: {},
         from: query.from || 0,
         size: query.size || 10,
-        sort: query.sort || {}
+        sort: []
     };
 
-    var termFields = ['category_id'];
+    var specialTermFields = {'column_id': null};
 
     var termParser = function (query, field) {
         if (query[field]) {
@@ -87,54 +87,97 @@ var _qeruyParser = function (query) {
         return null;
     };
 
-    /**--------------------------------------------
-     * 处理所有的Term查询提条件
-     --------------------------------------------*/
-    termFields.forEach(function (rule) {
-        var item = termParser(query, rule);
-        if (item !== null) {
-            result.query.bool.must.push(item);
-        }
-    });
+    var rangeTypes = ['gte', 'gt', 'lte', 'lt'];
+    var setVal = function (obj, k, v) {
+        obj[k] = v;
 
-    /**
-     * 范围
-     */
+        return obj
+    };
+    var rangeParser = function (query, field) {
 
+        var val = query[field];
+        if (val) {
+            var rangeItem = {
+                "range": {}
+            };
 
-    /**--------------------------------------------
-     * 处理价格区间
-     --------------------------------------------*/
-    if (query['price_range']) {
-
-        var priceRange = {
-            range: {
-                'sale_price': {}
-            }
-        };
-        if (query['price_range'].from) {
-            priceRange.range.price.from = query['price_range'].from;
-        }
-
-        if (query['price_range'].to) {
-            priceRange.range.price.to = query['price_range'].to;
-        }
-        result.query.bool.must.push(priceRange);
-    }
-
-    /**--------------------------------------------
-     * 处理Levels，
-     * 需求：小于等于等级的商品
-     --------------------------------------------*/
-    if (query['level']) {
-        result.query.bool.must.push({
-            "range": {
-                "level": {
-                    "lte": query.level
+            rangeTypes.forEach(function (t) {
+                if (val[t]) {
+                    rangeItem.range[field] = setVal({}, t, val[t]);
                 }
+            });
+        }
+
+        return null;
+    };
+
+    var sortParser = function (query) {
+
+        var fieldName = query['field'];
+        var fieldValue = query['params'];
+        if (fieldName) {
+            var item = {};
+            if (!fieldValue || _.isString(fieldValue)) {
+                item[fieldName] = fieldValue || 'asc';
+            } else if (_.isArray(fieldValue)) {
+                var t = {};
+                for (var i = 0; i < fieldValue.length; i + 2) {
+                    t[fieldValue[i]] = t[fieldValue[i + 1]];
+                }
+
+            } else {
+                item[fieldName] = fieldValue;
             }
-        });
+
+            return item;
+        }
+
+        return null;
+    };
+
+    if (query['must']) {
+
+        var must = query['must'];
+        /**
+         * 范围
+         */
+        if (must['range']) {
+            var ranges = must.range;
+
+            ranges.forEach(function (r) {
+                var item = rangeParser(ranges, r);
+                if (item !== null) {
+                    result.query.bool.must.push(item);
+                }
+            });
+        }
+
+        /**
+         * terms
+         */
+        if (must['terms']) {
+            var terms = must['terms'];
+            if (terms['column_id']) {
+                specialTermFields.column_id = terms.column_id;
+
+                delete terms.column_id;
+            }
+            /**--------------------------------------------
+             * 处理所有的Term查询提条件
+             --------------------------------------------*/
+            terms.forEach(function (rule) {
+                var item = termParser(terms, rule);
+                if (item !== null) {
+                    result.query.bool.must.push(item);
+                }
+            });
+        }
     }
+
+    if (query['should']) {
+        //TODO: 没做处理
+    }
+
 
     /**--------------------------------------------
      * 处理q , 不传参数获取所有数据
@@ -154,52 +197,17 @@ var _qeruyParser = function (query) {
         });
     }
 
-    /**--------------------------------------------
-     * 处理价格区间Facets
-     * 说明：
-     * 参入参数
-     * {
-     *      facet_price_ranges:[{
-     *          to:50
-     *      },{
-     *          from:51 , to:200
-     *      }]
-     * }
-     --------------------------------------------*/
+    if (query.sort) {
+        var sorts = query.sort;
 
-    if (query['facet_price_ranges'] && query['facet_price_ranges'] !== null) {
-        result.facets['price_ranges'] = {
-            range: {
-                field: 'sale_price',
-                ranges: query['facet_price_ranges']
+        sorts.forEach(function (s) {
+            var item = sortParser(s);
+            if (item !== null) {
+                result.sort.push(item);
             }
-        };
-    }
+        });
 
-    /**--------------------------------------------
-     * 分类facet
-     --------------------------------------------*/
 
-    if (query['enable_facet_category_id'] && query['enable_facet_category_id'] === 'true') {
-        result.facets['categories'] = {
-            'terms': {
-                //field: 'category_id',
-                "script_field": "_source.category_id+'" + SPLIT + "'+_source.category_name",
-                size: 5000
-            }
-        }
-    }
-
-    /**--------------------------------------------
-     * 品牌facet
-     --------------------------------------------*/
-    if (query['enable_facet_brand_id'] && query['enable_facet_brand_id'] === 'true') {
-        result.facets['brands'] = {
-            'terms': {
-                "script_field": "_source.brand_id+'" + SPLIT + "'+_source.brand_name",
-                size: 5000
-            }
-        }
     }
 
     return result;
@@ -260,7 +268,7 @@ module.exports = function (router) {
 
     router.post('/search/', function (req, res) {
         var query = _qeruyParser(req.body || req.query);
-        debug('post.search.query:%s', JSON.stringify(query));
+        debug('search.query:%s', JSON.stringify(query));
 
         esClient.search({
             index: _index,
