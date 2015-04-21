@@ -284,76 +284,10 @@ module.exports = function (router) {
                 return;
             }
 
-            console.log(result) ;
             //{items,total}
             var items = esClient.resultResolve(result);
 
-            console.log(items);
-            /**--------------------------------------------
-             * 处理facet
-             * {
-             --------------------------------------------*/
-            var facetTermProcess = function (facetKey, terms) {
-                var filterItems = _.map(terms, function (term) {
-                    var parts = term.term.split(SPLIT);
-
-                    return {
-                        id: parts[0],
-                        name: parts[1],
-                        count: term.count
-                    };
-                });
-
-                return {
-                    _type: facetKey,
-                    items: filterItems
-                }
-            };
-
-            var facetRangeProcess = function (facetKey, ranges) {
-                var rangeItems = _.map(ranges, function (range) {
-                    return {
-                        from: range.from,
-                        to: range.to,
-                        min: range.min,
-                        max: range.max,
-                        count: range.count
-                    };
-                });
-
-                return {_type: facetKey, items: rangeItems};
-            };
-
-            var facetKeys = _.keys(result.facets);
-            var filters = _.map(facetKeys, function (facetKey) {
-
-                var facetItem = result.facets[facetKey] || {};
-
-                // process terms type
-                if (facetItem._type === 'terms') {
-                    var terms = result.facets[facetKey].terms;
-                    return facetTermProcess(facetKey, terms);
-                }
-
-                //process range type for price range
-                if (facetItem._type === 'range') {
-                    var terms = result.facets[facetKey].ranges;
-                    return facetRangeProcess(facetKey, terms);
-                }
-
-                return undefined;
-            }) || [];
-
             var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
-
-            /**
-             * 对返回结果进行赋值
-             *
-             * fields:categories,brands,price_ranges
-             */
-            _.forEach(filters, function (filter) {
-                result.data[filter._type] = filter.items;
-            });
 
             res.status(200);
             res.json(result);
