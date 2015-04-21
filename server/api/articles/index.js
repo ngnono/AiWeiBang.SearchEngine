@@ -267,6 +267,7 @@ module.exports = function (router) {
     });
 
     router.post('/search/', function (req, res) {
+        console.log(JSON.stringify(req.body));
         var query = _qeruyParser(req.body || req.query);
         debug('search.query:%s', JSON.stringify(query));
 
@@ -284,7 +285,7 @@ module.exports = function (router) {
             }
 
             //{items,total}
-            var products = esClient.resultResolve(result);
+            var items = esClient.resultResolve(result);
 
             /**--------------------------------------------
              * 处理facet
@@ -341,7 +342,7 @@ module.exports = function (router) {
                 return undefined;
             }) || [];
 
-            var result = {status: true, code: 200, data: {total: total, data: products}};
+            var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
 
             /**
              * 对返回结果进行赋值
