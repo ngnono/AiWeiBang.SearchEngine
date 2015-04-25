@@ -1,5 +1,5 @@
 {
-    "config":"default"  ,
+    "config": "default",
 
     "indices_types": {
         "articles": "articles",
@@ -21,7 +21,7 @@
                     "article_title": {
                         "type": "string",
                         "store": "yes",
-                        "index":"analyzed",
+                        "index": "analyzed",
                         "indexAnalyzer": "ik_max_word",
                         "searchAnalyzer": "ik_smart",
                         "copy_to": "q"
@@ -29,9 +29,9 @@
                     "summary": {
                         "type": "string",
                         "store": "yes",
-                        "index":"analyzed",
+                        "index": "analyzed",
                         "indexAnalyzer": "ik_smart_html",
-                        "searchAnalyzer": "ik_smart" ,
+                        "searchAnalyzer": "ik_smart",
                         "copy_to": "q"
                     },
                     "source_url": {
@@ -143,17 +143,22 @@
                     "content": {
                         "type": "string",
                         "store": "yes",
-                        "index":"analyzed",
+                        "index": "analyzed",
                         "indexAnalyzer": "ik_smart_html",
                         "searchAnalyzer": "ik_smart",
                         "copy_to": "q"
                     },
-                    "q":{
-                        "type":"string",
-                        "store":"no",
-                        "index":"analyzed",
+                    "q": {
+                        "type": "string",
+                        "store": "no",
+                        "index": "analyzed",
                         "indexAnalyzer": "ik_smart_html",
                         "searchAnalyzer": "ik_smart"
+                    },
+                    "last_index_datetime": {
+                        "type": "date",
+                        "store": "no",
+                        "index": "not_analyzed"
                     }
                 }
             }
@@ -177,6 +182,11 @@
                         "type": "integer",
                         "index": "not_analyzed",
                         "store": "no"
+                    },
+                    "last_index_datetime": {
+                        "type": "date",
+                        "store": "no",
+                        "index": "not_analyzed"
                     }
                 }
             }

@@ -64,6 +64,7 @@ function _save(body, callback) {
  */
 var _qeruyParser = function (query) {
 
+
     var result = {
         query: {
             bool: {must: []}
@@ -112,7 +113,7 @@ var _qeruyParser = function (query) {
     };
 
     var sortParser = function (query) {
-
+        debug('sortParser.query:%s', JSON.stringify(query));
         var fieldName = query['field'];
         var fieldValue = query['params'];
         if (fieldName) {
@@ -120,15 +121,25 @@ var _qeruyParser = function (query) {
             if (!fieldValue || _.isString(fieldValue)) {
                 item[fieldName] = fieldValue || 'asc';
             } else if (_.isArray(fieldValue)) {
+                debug('sortParser.array:%s', JSON.stringify(fieldValue));
                 var t = {};
-                for (var i = 0; i < fieldValue.length; i + 2) {
+
+                debug('length:%s', fieldValue.length);
+                for (var i = 0; i < fieldValue.length; i += 2) {
+                    debug('f:%s', fieldValue[i]);
+                    debug('f:%s', fieldValue[i + 1]);
+
                     t[fieldValue[i]] = t[fieldValue[i + 1]];
                 }
+                debug('sortParser.array.t:%s', JSON.stringify(t));
+
+                item[fieldName] = t;
 
             } else {
                 item[fieldName] = fieldValue;
             }
 
+            debug('sortParser.item:%s', JSON.stringify(item));
             return item;
         }
 
@@ -201,7 +212,9 @@ var _qeruyParser = function (query) {
         var sorts = query.sort;
 
         sorts.forEach(function (s) {
+            console.log(s);
             var item = sortParser(s);
+            console.log(item);
             if (item !== null) {
                 result.sort.push(item);
             }
@@ -209,6 +222,8 @@ var _qeruyParser = function (query) {
 
 
     }
+
+    debug('queryParser OK');
 
     return result;
 };
@@ -252,22 +267,17 @@ module.exports = function (router) {
     });
 
 
-    router.post('/:id/:field/:val', function (req, res, id, field, val) {
-        //update
-        var body = req.body;
-        //增量 OR update
-        //TODO:增量修改
-
-
-    });
-
     router.get('/search/', function (req, res) {
         res.status('405');
         res.json({status: false, statusCode: 405, message: 'not support get,only support post.'});
     });
 
     router.post('/search/', function (req, res) {
+<<<<<<< HEAD
         console.log(JSON.stringify(req.body));
+=======
+
+>>>>>>> release/tempPublic
         var query = _qeruyParser(req.body || req.query);
         debug('search.query:%s', JSON.stringify(query));
 
@@ -285,9 +295,44 @@ module.exports = function (router) {
             }
 
             //{items,total}
+<<<<<<< HEAD
             var items = esClient.resultResolve(result);
 
             var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
+=======
+            var document = esClient.resultResolve(result);
+
+            var facetKeys = _.keys(result.facets);
+            var filters = _.map(facetKeys, function (facetKey) {
+
+                var facetItem = result.facets[facetKey] || {};
+
+                // process terms type
+                if (facetItem._type === 'terms') {
+                    var terms = result.facets[facetKey].terms;
+                    return facetTermProcess(facetKey, terms);
+                }
+
+                //process range type for price range
+                if (facetItem._type === 'range') {
+                    var terms = result.facets[facetKey].ranges;
+                    return facetRangeProcess(facetKey, terms);
+                }
+
+                return undefined;
+            }) || [];
+
+            var result = {status: true, code: 200, data: {total: document.total, data: document.items}};
+
+            /**
+             * 对返回结果进行赋值
+             *
+             * fields:categories,brands,price_ranges
+             */
+            _.forEach(filters, function (filter) {
+                result.data[filter._type] = filter.items;
+            });
+>>>>>>> release/tempPublic
 
             res.status(200);
             res.json(result);
@@ -373,6 +418,22 @@ module.exports = function (router) {
     });
 
     /**
+     * 增量更新 ID下的某字段
+     */
+    router.post('/:id/update', function (req, res, id) {
+        var body = req.body;
+
+        res.status(404);
+
+        res.json({
+            status: true,
+            data: 'not ...',
+            code: 404
+
+        })
+    });
+
+    /**
      * 创建
      */
     router.post('/', function (req, res) {
@@ -435,5 +496,6 @@ module.exports = function (router) {
             id: id
         }, cb);
     });
+
 
 };

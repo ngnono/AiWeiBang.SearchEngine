@@ -6,17 +6,63 @@
 ## Install
 
 ```sh
-$ npm install --save searchengine
+$ npm install --save -g serarchEngine
 ```
+
+oh~ my Allah.
+
+this project isn't publish.....
 
 
 ## Usage
 
-```js
-var searchengine = require('searchengine');
 
-searchengine('Rainbow');
+### app.js
+
+#### delete this config index
+
+
+```sh
+$ NODE_ENV=development node app.js -d
 ```
+
+#### create and mapping this config index 
+and you know config this index name
+
+##### create index_v1 and aliases index   
+
+
+```sh
+$ NODE_ENV=development node app.js -a 
+```
+
+### server.js
+
+#### start server listen to localhost:6110 or PORT=8080 and you know
+
+
+```sh
+$ NODE_ENV=development DEBUG=server:* PORT=8080 node server.js
+```
+
+## Production
+
+#### use [pm2](github.com/Unitech/pm2) and you know
+
+```sh
+$ NODE_ENV=production PORT=8080 pm2 start server.js --name searchEngine
+```
+## Preparation
+
+```sh
+$ npm install
+```
+
+## Features
+
+and you know 4 serach
+
+
 
 
 ## License

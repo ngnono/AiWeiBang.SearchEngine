@@ -28,7 +28,8 @@
     "lodash": "^3.6.0",
     "method-override": "^2.3.2",
     "serve-favicon": "^2.2.0",
-    "static-favicon": "^2.0.0-alpha"
+    "static-favicon": "^2.0.0-alpha",
+    "string": "^3.1.1"
   },
   "devDependencies": {
     "grunt-cli": "^0.1.13",
