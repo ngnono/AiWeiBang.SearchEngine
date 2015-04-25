@@ -64,6 +64,7 @@ function _save(body, callback) {
  */
 var _qeruyParser = function (query) {
 
+
     var result = {
         query: {
             bool: {must: []}
@@ -112,7 +113,7 @@ var _qeruyParser = function (query) {
     };
 
     var sortParser = function (query) {
-
+        debug('sortParser.query:%s', JSON.stringify(query));
         var fieldName = query['field'];
         var fieldValue = query['params'];
         if (fieldName) {
@@ -120,15 +121,25 @@ var _qeruyParser = function (query) {
             if (!fieldValue || _.isString(fieldValue)) {
                 item[fieldName] = fieldValue || 'asc';
             } else if (_.isArray(fieldValue)) {
+                debug('sortParser.array:%s', JSON.stringify(fieldValue));
                 var t = {};
-                for (var i = 0; i < fieldValue.length; i + 2) {
+
+                debug('length:%s', fieldValue.length);
+                for (var i = 0; i < fieldValue.length; i += 2) {
+                    debug('f:%s', fieldValue[i]);
+                    debug('f:%s', fieldValue[i + 1]);
+
                     t[fieldValue[i]] = t[fieldValue[i + 1]];
                 }
+                debug('sortParser.array.t:%s', JSON.stringify(t));
+
+                item[fieldName] = t;
 
             } else {
                 item[fieldName] = fieldValue;
             }
 
+            debug('sortParser.item:%s', JSON.stringify(item));
             return item;
         }
 
@@ -201,7 +212,9 @@ var _qeruyParser = function (query) {
         var sorts = query.sort;
 
         sorts.forEach(function (s) {
+            console.log(s);
             var item = sortParser(s);
+            console.log(item);
             if (item !== null) {
                 result.sort.push(item);
             }
@@ -209,6 +222,8 @@ var _qeruyParser = function (query) {
 
 
     }
+
+    debug('queryParser OK');
 
     return result;
 };
@@ -252,21 +267,13 @@ module.exports = function (router) {
     });
 
 
-    router.post('/:id/:field/:val', function (req, res, id, field, val) {
-        //update
-        var body = req.body;
-        //增量 OR update
-        //TODO:增量修改
-
-
-    });
-
     router.get('/search/', function (req, res) {
         res.status('405');
         res.json({status: false, statusCode: 405, message: 'not support get,only support post.'});
     });
 
     router.post('/search/', function (req, res) {
+
         var query = _qeruyParser(req.body || req.query);
         debug('search.query:%s', JSON.stringify(query));
 
@@ -284,42 +291,7 @@ module.exports = function (router) {
             }
 
             //{items,total}
-            var products = esClient.resultResolve(result);
-
-            /**--------------------------------------------
-             * 处理facet
-             * {
-             --------------------------------------------*/
-            var facetTermProcess = function (facetKey, terms) {
-                var filterItems = _.map(terms, function (term) {
-                    var parts = term.term.split(SPLIT);
-
-                    return {
-                        id: parts[0],
-                        name: parts[1],
-                        count: term.count
-                    };
-                });
-
-                return {
-                    _type: facetKey,
-                    items: filterItems
-                }
-            };
-
-            var facetRangeProcess = function (facetKey, ranges) {
-                var rangeItems = _.map(ranges, function (range) {
-                    return {
-                        from: range.from,
-                        to: range.to,
-                        min: range.min,
-                        max: range.max,
-                        count: range.count
-                    };
-                });
-
-                return {_type: facetKey, items: rangeItems};
-            };
+            var document = esClient.resultResolve(result);
 
             var facetKeys = _.keys(result.facets);
             var filters = _.map(facetKeys, function (facetKey) {
@@ -341,7 +313,7 @@ module.exports = function (router) {
                 return undefined;
             }) || [];
 
-            var result = {status: true, code: 200, data: {total: total, data: products}};
+            var result = {status: true, code: 200, data: {total: document.total, data: document.items}};
 
             /**
              * 对返回结果进行赋值
