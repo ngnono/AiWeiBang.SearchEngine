@@ -436,6 +436,22 @@ module.exports = function (router) {
     });
 
     /**
+     * 增量更新 ID下的某字段
+     */
+    router.post('/:id/update', function (req, res, id) {
+        var body = req.body;
+
+        res.status(404);
+
+        res.json({
+            status: true,
+            data: 'not ...',
+            code: 404
+
+        })
+    });
+
+    /**
      * 创建
      */
     router.post('/', function (req, res) {
@@ -498,5 +514,6 @@ module.exports = function (router) {
             id: id
         }, cb);
     });
+
 
 };

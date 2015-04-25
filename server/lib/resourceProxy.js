@@ -8,6 +8,7 @@
 'use strict';
 
 var _ = require('lodash');
+var S = require('string');
 var debug = require('debug')('server:lib:resource_proxy');
 
 function noop() {
@@ -15,6 +16,19 @@ function noop() {
 
 
 module.exports = resource;
+
+function _stdCallback(callback) {
+
+    callback = callback || noop;
+
+    return function (err, rst) {
+        if (err) {
+            return callback(err);
+        } else {
+            callback(null, rst);
+        }
+    }
+};
 
 /**
  * 资源操作
@@ -102,7 +116,7 @@ function resource(options) {
                 return callback(err);
             }
             else {
-                debug('_index.res:(%s)', JSON.stringify(res));
+                //debug('_index.res:(%s)', JSON.stringify(res));
                 callback(null, res);
             }
         });
@@ -119,7 +133,41 @@ function resource(options) {
         });
     };
 
+    var _update = function (opts, callback) {
+        debug('_update(opts=%s)', JSON.stringify(opts));
+
+        client.update(opts, _stdCallback(callback));
+
+    };
+
     return {
+        updateField: function (opts, callback) {
+            opts = opts || {};
+            callback = callback || noop;
+            /**
+             * key = val
+             *
+             */
+
+            var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
+            //{field:value}
+            var values = opts.body.params;
+
+            var s = S(scriptTemplate).template(values).s;
+
+            var q = {
+                index: opts.index,
+                type: opts.type,
+                id: opts.id,
+                body: {
+                    script: s,
+                    params: values
+                }
+            }
+
+
+        },
+
         save: function (opts, callback) {
             opts = opts || {};
             callback = callback || opts.callback || noop;
