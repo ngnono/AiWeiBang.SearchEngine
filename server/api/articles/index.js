@@ -273,11 +273,6 @@ module.exports = function (router) {
     });
 
     router.post('/search/', function (req, res) {
-<<<<<<< HEAD
-        console.log(JSON.stringify(req.body));
-=======
-
->>>>>>> release/tempPublic
         var query = _qeruyParser(req.body || req.query);
         debug('search.query:%s', JSON.stringify(query));
 
@@ -295,12 +290,11 @@ module.exports = function (router) {
             }
 
             //{items,total}
-<<<<<<< HEAD
+
             var items = esClient.resultResolve(result);
 
             var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
-=======
-            var document = esClient.resultResolve(result);
+
 
             var facetKeys = _.keys(result.facets);
             var filters = _.map(facetKeys, function (facetKey) {
@@ -332,7 +326,7 @@ module.exports = function (router) {
             _.forEach(filters, function (filter) {
                 result.data[filter._type] = filter.items;
             });
->>>>>>> release/tempPublic
+
 
             res.status(200);
             res.json(result);
