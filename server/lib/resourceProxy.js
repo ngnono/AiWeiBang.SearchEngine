@@ -75,11 +75,14 @@ function resource(options) {
             delete d.id;
             if (d.parent) {
                 indexDocHead.index['parent'] = d.parent;
+                delete d.parent;
             }
 
             docs.push(indexDocHead);
-            docs.push(d.body);
+            docs.push(d);
         });
+
+        debug('warp2bulkdocs.docs:%s',JSON.stringify(docs));
 
         return {body: docs};
     };
