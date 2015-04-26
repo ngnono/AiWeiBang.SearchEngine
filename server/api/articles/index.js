@@ -314,20 +314,9 @@ module.exports = function (router) {
             }
 
             //{items,total}
-
             var items = esClient.resultResolve(result);
 
             var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
-
-            /**
-             * 对返回结果进行赋值
-             *
-             * fields:categories,brands,price_ranges
-             */
-            _.forEach(filters, function (filter) {
-                result.data[filter._type] = filter.items;
-            });
-
 
             res.status(200);
             res.json(result);
