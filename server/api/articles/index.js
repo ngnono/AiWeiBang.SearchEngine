@@ -17,6 +17,7 @@ var esClient = require('../../lib/resourceProxy')({client: es});
 
 var _index = config.get('indices_name');
 var _type = 'articles';
+var _type4ArticlesColoums = 'articles_columns';
 
 /**
  * 处理分类聚合实体作为分割符号进行处理
@@ -76,6 +77,7 @@ var _qeruyParser = function (query) {
     };
 
     var specialTermFields = {'column_id': null};
+//    var specialRangeFields = {'column_ids': []};
 
     var termParser = function (query, field) {
         if (query[field]) {
@@ -189,7 +191,6 @@ var _qeruyParser = function (query) {
         //TODO: 没做处理
     }
 
-
     /**--------------------------------------------
      * 处理q , 不传参数获取所有数据
      --------------------------------------------*/
@@ -208,6 +209,9 @@ var _qeruyParser = function (query) {
         });
     }
 
+    /**
+     *  处理 SORT
+     */
     if (query.sort) {
         var sorts = query.sort;
 
@@ -222,6 +226,26 @@ var _qeruyParser = function (query) {
 
 
     }
+
+    /**
+     * 处理 columns
+     */
+
+    if (specialTermFields) {
+        if (specialTermFields.column_id) {
+            //
+            var childQuery = {
+                has_child: {
+                    type: _type4ArticlesColoums,
+                    query: { term: {
+                        'column_id': specialTermFields.column_id
+                    }}
+                }
+            };
+            result.query.bool.must.push(childQuery);
+        }
+    }
+
 
     debug('queryParser OK');
 
@@ -352,12 +376,10 @@ module.exports = function (router) {
                         message: err.message
                     });
 
-                console.error(err);
+                debug('save.err:%s', JSON.stringify(err));
 
                 return;
-
             }
-
 
             res.status(201);
             res.json({
@@ -416,15 +438,48 @@ module.exports = function (router) {
      */
     router.post('/:id/update', function (req, res, id) {
         var body = req.body;
+        var model = req.article;
 
-        res.status(404);
+        /**
+         *
+         * params:
+         * {
+         *   field1 : val1,
+         *   field2 : val2
+         * }
+         */
 
-        res.json({
-            status: true,
-            data: 'not ...',
-            code: 404
+        var params = body.params;
 
-        })
+        var cb = function (error, result) {
+            if (error) {
+                var code = error.errorCode || 400;
+                res.status(code);
+
+                return res.json({
+                    status: false,
+                    message: error.message,
+                    code: code
+                });
+            }
+            res.status(201);
+
+            res.json({
+                status: true,
+                data: result,
+                code: 201
+
+            })
+        };
+
+        var opts = {
+            index: _index,
+            type: _type,
+            id: id,
+            params: params
+        };
+
+        esClient.updateField(opts, cb);
     });
 
     /**
@@ -490,6 +545,4 @@ module.exports = function (router) {
             id: id
         }, cb);
     });
-
-
 };

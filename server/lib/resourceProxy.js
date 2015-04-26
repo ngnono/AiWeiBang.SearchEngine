@@ -144,16 +144,13 @@ function resource(options) {
         updateField: function (opts, callback) {
             opts = opts || {};
             callback = callback || noop;
-            /**
-             * key = val
-             *
-             */
-
-            var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
             //{field:value}
             var values = opts.body.params;
+            var keys = _.keys(values);
 
-            var s = S(scriptTemplate).template(values).s;
+            var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
+
+            var s = S(scriptTemplate).template({field: keys[0]}).s;
 
             var q = {
                 index: opts.index,
@@ -163,8 +160,9 @@ function resource(options) {
                     script: s,
                     params: values
                 }
-            }
+            };
 
+            _update(q, callback);
 
         },
 
