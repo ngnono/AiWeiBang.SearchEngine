@@ -57,7 +57,13 @@ exports = module.exports = function (router) {
      * 批量索引
      */
     router.post('/bulk', function (req, res) {
-        var body = req.body;
+        var body = [];
+        _.forEach(req.body, function (d) {
+            if(d){
+                d['parent'] = d['article_id'];
+                body.push(d);
+            }
+        });
 
         var docs = {
             index: _index,
