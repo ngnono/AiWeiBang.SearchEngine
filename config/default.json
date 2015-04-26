@@ -20,7 +20,7 @@
                     },
                     "article_title": {
                         "type": "string",
-                        "store": "yes",
+                        "store": "no",
                         "index": "analyzed",
                         "indexAnalyzer": "ik_max_word",
                         "searchAnalyzer": "ik_smart",
@@ -28,7 +28,7 @@
                     },
                     "summary": {
                         "type": "string",
-                        "store": "yes",
+                        "store": "no",
                         "index": "analyzed",
                         "indexAnalyzer": "ik_smart_html",
                         "searchAnalyzer": "ik_smart",
@@ -130,7 +130,7 @@
                         "store": "no",
                         "index": "not_analyzed"
                     },
-                    "lik_num": {
+                    "like_num": {
                         "type": "integer",
                         "store": "no",
                         "index": "not_analyzed"
@@ -142,7 +142,7 @@
                     },
                     "content": {
                         "type": "string",
-                        "store": "yes",
+                        "store": "no",
                         "index": "analyzed",
                         "indexAnalyzer": "ik_smart_html",
                         "searchAnalyzer": "ik_smart",

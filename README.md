@@ -47,7 +47,7 @@ $ NODE_ENV=development DEBUG=server:* PORT=8080 node server.js
 
 ## Production
 
-#### use [pm2](github.com/Unitech/pm2) and you know
+#### use [pm2](https://github.com/Unitech/pm2) and you know
 
 ```sh
 $ NODE_ENV=production PORT=8080 pm2 start server.js --name searchEngine
@@ -61,6 +61,20 @@ $ npm install
 ## Features
 
 and you know 4 serach
+
+### search
+
+post http://127.0.0.1:6110/searchEngine/api/articles/search
+
+{
+
+  //搜索关键字
+  q:'关键字搜索',
+  
+  //排序
+  sort: { fieldName: 'asc', fieldName2:[order:'desc']}
+
+}
 
 
 
