@@ -73,8 +73,12 @@ function resource(options) {
         _.forEach(datas, function (d) {
             var indexDocHead = {index: {_index: opts.index, _type: opts.type, _id: d.id}};
             delete d.id;
+            if (d.parent) {
+                indexDocHead.index['parent'] = d.parent;
+            }
+
             docs.push(indexDocHead);
-            docs.push(d);
+            docs.push(d.body);
         });
 
         return {body: docs};
