@@ -297,7 +297,6 @@ module.exports = function (router) {
     });
 
     router.post('/search/', function (req, res) {
-
         var query = _qeruyParser(req.body || req.query);
         debug('search.query:%s', JSON.stringify(query));
 
@@ -315,29 +314,10 @@ module.exports = function (router) {
             }
 
             //{items,total}
-            var document = esClient.resultResolve(result);
 
-            var facetKeys = _.keys(result.facets);
-            var filters = _.map(facetKeys, function (facetKey) {
+            var items = esClient.resultResolve(result);
 
-                var facetItem = result.facets[facetKey] || {};
-
-                // process terms type
-                if (facetItem._type === 'terms') {
-                    var terms = result.facets[facetKey].terms;
-                    return facetTermProcess(facetKey, terms);
-                }
-
-                //process range type for price range
-                if (facetItem._type === 'range') {
-                    var terms = result.facets[facetKey].ranges;
-                    return facetRangeProcess(facetKey, terms);
-                }
-
-                return undefined;
-            }) || [];
-
-            var result = {status: true, code: 200, data: {total: document.total, data: document.items}};
+            var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
 
             /**
              * 对返回结果进行赋值
@@ -347,6 +327,7 @@ module.exports = function (router) {
             _.forEach(filters, function (filter) {
                 result.data[filter._type] = filter.items;
             });
+
 
             res.status(200);
             res.json(result);
