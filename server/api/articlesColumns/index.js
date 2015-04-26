@@ -56,7 +56,7 @@ exports = module.exports = function (router) {
     /**
      * 批量索引
      */
-    router.post('/bulk', [filter.checkBodyFilter], function (req, res) {
+    router.post('/bulk', function (req, res) {
         var body = req.body;
 
         var docs = {
@@ -99,7 +99,8 @@ exports = module.exports = function (router) {
             body: body,
             index: _index,
             type: _type,
-            id: id
+            id: id,
+            parent: body['article_id']
         }, function (err, rst) {
             if (err) {
                 debug('post.err:%s', JSON.stringify(err));
