@@ -319,29 +319,6 @@ module.exports = function (router) {
 
             var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
 
-
-            var facetKeys = _.keys(result.facets);
-            var filters = _.map(facetKeys, function (facetKey) {
-
-                var facetItem = result.facets[facetKey] || {};
-
-                // process terms type
-                if (facetItem._type === 'terms') {
-                    var terms = result.facets[facetKey].terms;
-                    return facetTermProcess(facetKey, terms);
-                }
-
-                //process range type for price range
-                if (facetItem._type === 'range') {
-                    var terms = result.facets[facetKey].ranges;
-                    return facetRangeProcess(facetKey, terms);
-                }
-
-                return undefined;
-            }) || [];
-
-            var result = {status: true, code: 200, data: {total: document.total, data: document.items}};
-
             /**
              * 对返回结果进行赋值
              *
