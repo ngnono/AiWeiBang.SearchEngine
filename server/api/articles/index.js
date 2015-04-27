@@ -216,15 +216,11 @@ var _qeruyParser = function (query) {
         var sorts = query.sort;
 
         sorts.forEach(function (s) {
-            console.log(s);
             var item = sortParser(s);
-            console.log(item);
             if (item !== null) {
                 result.sort.push(item);
             }
         });
-
-
     }
 
     /**
@@ -246,6 +242,29 @@ var _qeruyParser = function (query) {
         }
     }
 
+    /**
+     * 处理 fields
+     */
+
+    if (query['include_fields']) {
+        result['partial_fields'] = {
+            "_source": {
+                "include": query.include_fields
+            }
+        };
+    }
+
+    if (query['exclude_fields']) {
+        if (!result['partial_fields']) {
+
+            result['partial_fields'] = {
+                "_source": {}
+            };
+
+        }
+
+        result.partial_fields._source['exclude'] = query.exclude_fields;
+    }
 
     debug('queryParser OK');
 

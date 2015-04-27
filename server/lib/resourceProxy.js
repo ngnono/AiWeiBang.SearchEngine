@@ -82,7 +82,7 @@ function resource(options) {
             docs.push(d);
         });
 
-        debug('warp2bulkdocs.docs:%s',JSON.stringify(docs));
+        debug('warp2bulkdocs.docs:%s', JSON.stringify(docs));
 
         return {body: docs};
     };
@@ -310,9 +310,27 @@ function resource(options) {
 
             //items
             var items = _.map(rst.hits.hits, function (item) {
-                var data = item._source;
-                //i.id = item._id;
-                data._id = item._id;
+
+                var data;
+                if (item.fields) {
+                    if (_.isArray(item.fields._source)) {
+                        //TODO: fields query 返回的是 []
+                        data = item.fields._source[0];
+                    } else {
+                        data = item.fields._source;
+                    }
+
+                } else if (item._source) {
+                    data = item._source;
+                }
+
+                if (item._id) {
+                    if (!data) {
+                        data = {};
+                    }
+
+                    data._id = item._id;
+                }
 
                 return  data;
             });
