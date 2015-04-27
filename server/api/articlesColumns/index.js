@@ -25,10 +25,19 @@ exports = module.exports = function (router) {
      */
     router.param('id', function (req, res, next, id) {
 
+        var ids = id.split('_');
+
+        if (ids.length !== 2) {
+            return next(new Error('failed to load articles(' + id.toString() + ').'));
+        }
+
+        var parentId = ids[0];
+
         esClient.get({
             id: id,
             index: _index,
-            type: _type
+            type: _type,
+            parent: parentId
         }, function (err, data) {
             if (err) {
                 console.error(err);
@@ -45,7 +54,8 @@ exports = module.exports = function (router) {
             /**
              * 业务对象
              */
-            req.articleColumn = data;
+            req.articleColumn = data._source;
+            req.articleColumn._id = data._id;
 
             next();
         });
@@ -59,7 +69,7 @@ exports = module.exports = function (router) {
     router.post('/bulk', function (req, res) {
         var body = [];
         _.forEach(req.body, function (d) {
-            if(d){
+            if (d) {
                 d['parent'] = d['article_id'];
                 body.push(d);
             }
@@ -96,6 +106,9 @@ exports = module.exports = function (router) {
 
     });
 
+    /**
+     * 单条索引会检查
+     */
     router.post('/', [filter.checkBodyIdFilter], function (req, res) {
         var body = req.body;
         var id = body.id;
@@ -108,6 +121,7 @@ exports = module.exports = function (router) {
             id: id,
             parent: body['article_id']
         }, function (err, rst) {
+            //_id,created=True
             if (err) {
                 debug('post.err:%s', JSON.stringify(err));
                 var code = err.code || 400;
@@ -137,7 +151,7 @@ exports = module.exports = function (router) {
     /**
      * 删除
      */
-    router.delete('/:id', function (req, res, id) {
+    router.delete('/:id', function (req, res) {
 
         var cb = function (error, result) {
             if (error) {
@@ -163,14 +177,14 @@ exports = module.exports = function (router) {
         esClient.del({
             index: _index,
             type: _type,
-            id: id
+            id: req.articleColumn._id
         }, cb);
     });
 
     /**
      * get item by id
      */
-    router.get('/:id', function (req, res, id) {
+    router.get('/:id', function (req, res) {
 
         res.status(200);
         res.json({

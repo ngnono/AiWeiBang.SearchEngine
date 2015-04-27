@@ -75,11 +75,14 @@ function resource(options) {
             delete d.id;
             if (d.parent) {
                 indexDocHead.index['parent'] = d.parent;
+                delete d.parent;
             }
 
             docs.push(indexDocHead);
-            docs.push(d.body);
+            docs.push(d);
         });
+
+        debug('warp2bulkdocs.docs:%s', JSON.stringify(docs));
 
         return {body: docs};
     };
@@ -100,6 +103,10 @@ function resource(options) {
         }
         if (!params.body) {
             params.body = data
+        }
+
+        if (params.body.id) {
+            delete params.body.id;
         }
 
         return params;
@@ -149,22 +156,31 @@ function resource(options) {
             opts = opts || {};
             callback = callback || noop;
             //{field:value}
-            var values = opts.body.params;
+            var values = opts.params;
             var keys = _.keys(values);
 
             var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
 
             var s = S(scriptTemplate).template({field: keys[0]}).s;
 
+//            var params = {};
+//            _.forEach(keys, function (k) {
+//                params[k + '_'] = values[k];
+//            });
+
+
             var q = {
                 index: opts.index,
                 type: opts.type,
                 id: opts.id,
                 body: {
-                    script: s,
-                    params: values
+                    script: s,//'update_partial_read_num_script',
+                    params: values,
+                    "lang": "groovy"
                 }
             };
+
+            debug('_updatePart.q:', JSON.stringify(q));
 
             _update(q, callback);
 
@@ -219,13 +235,7 @@ function resource(options) {
                 throw new Error('opts.id is must.');
             }
 
-            var q = {
-                index: opts.index,
-                type: opts.type,
-                id: opts.id
-            };
-
-            client.get(q, function (err, res) {
+            client.get(opts, function (err, res) {
                 if (err) {
                     return callback(err);
                 } else {
@@ -307,9 +317,27 @@ function resource(options) {
 
             //items
             var items = _.map(rst.hits.hits, function (item) {
-                var data = item._source;
-                //i.id = item._id;
-                data._id = item._id;
+
+                var data;
+                if (item.fields) {
+                    if (_.isArray(item.fields._source)) {
+                        //TODO: fields query 返回的是 []
+                        data = item.fields._source[0];
+                    } else {
+                        data = item.fields._source;
+                    }
+
+                } else if (item._source) {
+                    data = item._source;
+                }
+
+                if (item._id) {
+                    if (!data) {
+                        data = {};
+                    }
+
+                    data._id = item._id;
+                }
 
                 return  data;
             });
