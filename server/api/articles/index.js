@@ -98,6 +98,7 @@ var _qeruyParser = function (query) {
     };
     var rangeParser = function (query, field) {
 
+        debug('rangeParser.rangeItem:%s',JSON.stringify(query));
         var val = query[field];
         if (val) {
             var rangeItem = {
@@ -109,6 +110,8 @@ var _qeruyParser = function (query) {
                     rangeItem.range[field] = setVal({}, t, val[t]);
                 }
             });
+
+            return rangeItem;
         }
 
         return null;
@@ -157,12 +160,22 @@ var _qeruyParser = function (query) {
         if (must['range']) {
             var ranges = must.range;
 
-            ranges.forEach(function (r) {
-                var item = rangeParser(ranges, r);
-                if (item !== null) {
-                    result.query.bool.must.push(item);
-                }
-            });
+            if(_.isArray(ranges)){
+                ranges.forEach(function (r) {
+                    var item = rangeParser(ranges, r);
+                    if (item !== null) {
+                        result.query.bool.must.push(item);
+                    }
+                });
+            }else{
+                var keys = _.keys(ranges);
+                keys.forEach(function (r) {
+                    var item = rangeParser(ranges, r);
+                    if (item !== null) {
+                        result.query.bool.must.push(item);
+                    }
+                });
+            }
         }
 
         /**
@@ -178,12 +191,23 @@ var _qeruyParser = function (query) {
             /**--------------------------------------------
              * 处理所有的Term查询提条件
              --------------------------------------------*/
-            terms.forEach(function (rule) {
-                var item = termParser(terms, rule);
-                if (item !== null) {
-                    result.query.bool.must.push(item);
-                }
-            });
+            if (_.isArray(terms)) {
+                terms.forEach(function (rule) {
+                    var item = termParser(terms, rule);
+                    if (item !== null) {
+                        result.query.bool.must.push(item);
+                    }
+                });
+            } else {
+                var keys = _.keys(terms);
+                keys.forEach(function (rule) {
+                    var item = termParser(terms, rule);
+                    if (item !== null) {
+                        result.query.bool.must.push(item);
+                    }
+                });
+            }
+
         }
     }
 
