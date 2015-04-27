@@ -105,6 +105,10 @@ function resource(options) {
             params.body = data
         }
 
+        if (params.body.id) {
+            delete params.body.id;
+        }
+
         return params;
 //    return {
 //        index: opts.index,
@@ -152,22 +156,31 @@ function resource(options) {
             opts = opts || {};
             callback = callback || noop;
             //{field:value}
-            var values = opts.body.params;
+            var values = opts.params;
             var keys = _.keys(values);
 
             var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
 
             var s = S(scriptTemplate).template({field: keys[0]}).s;
 
+//            var params = {};
+//            _.forEach(keys, function (k) {
+//                params[k + '_'] = values[k];
+//            });
+
+
             var q = {
                 index: opts.index,
                 type: opts.type,
                 id: opts.id,
                 body: {
-                    script: s,
-                    params: values
+                    script: s,//'update_partial_read_num_script',
+                    params: values,
+                    "lang": "groovy"
                 }
             };
+
+            debug('_updatePart.q:', JSON.stringify(q));
 
             _update(q, callback);
 
@@ -222,13 +235,7 @@ function resource(options) {
                 throw new Error('opts.id is must.');
             }
 
-            var q = {
-                index: opts.index,
-                type: opts.type,
-                id: opts.id
-            };
-
-            client.get(q, function (err, res) {
+            client.get(opts, function (err, res) {
                 if (err) {
                     return callback(err);
                 } else {

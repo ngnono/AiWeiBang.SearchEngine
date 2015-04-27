@@ -98,7 +98,7 @@ var _qeruyParser = function (query) {
     };
     var rangeParser = function (query, field) {
 
-        debug('rangeParser.rangeItem:%s',JSON.stringify(query));
+        debug('rangeParser.rangeItem:%s', JSON.stringify(query));
         var val = query[field];
         if (val) {
             var rangeItem = {
@@ -160,14 +160,14 @@ var _qeruyParser = function (query) {
         if (must['range']) {
             var ranges = must.range;
 
-            if(_.isArray(ranges)){
+            if (_.isArray(ranges)) {
                 ranges.forEach(function (r) {
                     var item = rangeParser(ranges, r);
                     if (item !== null) {
                         result.query.bool.must.push(item);
                     }
                 });
-            }else{
+            } else {
                 var keys = _.keys(ranges);
                 keys.forEach(function (r) {
                     var item = rangeParser(ranges, r);
@@ -303,6 +303,7 @@ module.exports = function (router) {
      */
     router.param('id', function (req, res, next, id) {
 
+        debug('param:%s',id);
         esClient.get({
             id: id,
             index: _index,
@@ -322,15 +323,17 @@ module.exports = function (router) {
 
             //id _id 未处理
 
+
             /**
              * 业务对象
              */
-            req.article = data;
+            req.article = data._source;
+            req.article._id = data._id;
+            //debug('params.req.article:%s',JSON.stringify(req.article));
 
             next();
         });
 
-        debug('id:%s', id);
     });
 
 
@@ -375,6 +378,8 @@ module.exports = function (router) {
             type: _type
         };
 
+        debug('bulk');
+
         esClient.save(docs, function (err, rst) {
             if (err) {
                 res.status(400);
@@ -402,23 +407,24 @@ module.exports = function (router) {
     /**
      * 根据ID 获取文章
      */
-    router.get('/:id', function (req, res, id) {
+    router.get('/:id', function (req, res) {
+        debug('get');
         res.status(200);
-        res.json({status: true, code: 200, version: pkg.version, data: req.article});
+        res.json({status: true, code: 200, data: req.article});
     });
 
     /**
      * 修改
      */
-    router.put('/:id', function (req, res, id) {
+    router.put('/:id', function (req, res) {
         var body = req.body || {};
 
         //id
         if (!body.id) {
-            body.id = id;
+            body.id = req.article.article_id || '';
         }
 
-        debug('post.body:%s', JSON.stringify(body));
+        debug('put.body:%s', JSON.stringify(body));
         var cb = function (error, result) {
             if (error) {
                 var code = error.errorCode || 400;
@@ -432,9 +438,10 @@ module.exports = function (router) {
             }
             res.status(201);
 
+            //{created:false}
             res.json({
                 status: true,
-                data: result,
+                data: body,
                 code: 201
             })
         };
@@ -445,7 +452,7 @@ module.exports = function (router) {
     /**
      * 增量更新 ID下的某字段
      */
-    router.post('/:id/update', function (req, res, id) {
+    router.post('/:id/partial/', function (req, res) {
         var body = req.body;
         var model = req.article;
 
@@ -458,7 +465,7 @@ module.exports = function (router) {
          * }
          */
 
-        var params = body.params;
+        var params = body.parts;
 
         var cb = function (error, result) {
             if (error) {
@@ -481,13 +488,16 @@ module.exports = function (router) {
             })
         };
 
+        debug('partial.id:%s', model.article_id);
+        debug('partial.model:%s', JSON.stringify(model));
+
         var opts = {
             index: _index,
             type: _type,
-            id: id,
+            id: model.article_id,
             params: params
         };
-
+        debug('part.opts:%s', JSON.stringify(opts));
         esClient.updateField(opts, cb);
     });
 
@@ -525,8 +535,9 @@ module.exports = function (router) {
     /**
      * 删除
      */
-    router.delete('/:id', function (req, res, id) {
+    router.delete('/:id', function (req, res) {
 
+        debug('delete');
         var cb = function (error, result) {
             if (error) {
                 var code = error.errorCode || 400;
@@ -551,7 +562,7 @@ module.exports = function (router) {
         esClient.del({
             index: _index,
             type: _type,
-            id: id
+            id: req.article._id
         }, cb);
     });
 };
