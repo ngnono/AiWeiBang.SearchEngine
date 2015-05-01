@@ -1,6 +1,6 @@
 {
   "name": "aiweibang.searchengine",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "The best module ever.",
   "author": {
     "name": "lianghongpeng",
@@ -9,6 +9,7 @@
   },
   "repository": "ngnono/aiweibang.searchengine",
   "license": "MIT",
+  "main": "index.js",
   "files": [
     "index.js"
   ],
