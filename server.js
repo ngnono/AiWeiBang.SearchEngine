@@ -14,6 +14,7 @@ var enrouten = require('express-enrouten');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var express = require('express');
+var path = require('path');
 
 var app = express();
 
