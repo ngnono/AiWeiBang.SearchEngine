@@ -105,9 +105,10 @@ var _qeruyParser = function (query) {
                 "range": {}
             };
 
+            rangeItem.range[field] = {};
             rangeTypes.forEach(function (t) {
                 if (val[t]) {
-                    rangeItem.range[field] = setVal({}, t, val[t]);
+                    setVal(rangeItem.range[field], t, val[t]);
                 }
             });
 
@@ -303,7 +304,7 @@ module.exports = function (router) {
      */
     router.param('id', function (req, res, next, id) {
 
-        debug('param:%s',id);
+        debug('param:%s', id);
         esClient.get({
             id: id,
             index: _index,
