@@ -363,7 +363,7 @@ module.exports = function (router) {
             //{items,total}
             var items = esClient.resultResolve(result);
 
-            var result = {status: true, code: 200, data: {total: items.total, data: items.items}};
+            var result = {status: true, code: 200, data: {total: items.total, data: items.items, size: query.size || 10, from: query.from || 0}};
 
             res.status(200);
             res.json(result);
