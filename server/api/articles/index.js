@@ -394,6 +394,7 @@ var _resultResolve = function (rst, opts) {
             var keys = opts.hl.keys;
             //处理 hl
             var hl = _highlightResolve(item, keys);
+            debug('hl:%s',JSON.stringify(hl));
             //merge
             if (hl) {
                 _.merge(data, hl);
@@ -481,6 +482,7 @@ module.exports = function (router) {
                 opts['hl'] = {
                     keys: _.keys(hlOpts)
                 };
+                debug('hl resolve:%s', JSON.stringify(opts));
             }
 
             //{items,total}
