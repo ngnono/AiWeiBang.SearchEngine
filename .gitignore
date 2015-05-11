@@ -91,3 +91,5 @@ config
 #grunt
 .tmp
 dist
+
+example/own/*.*

@@ -40,8 +40,6 @@ function Article(options) {
      *
      * 二。
      */
-
-
     return {
         /**
          * 别名
@@ -49,13 +47,18 @@ function Article(options) {
         alias: {
             get: function (callback) {
 
+
+                throw  new Error('not implement.');
                 var q = {
                     method: 'existsAlias'
                 };
 
+
+
                 esClient.indices();
 
             },
+
             set: function (opts, callback) {
                 var q = {
                     method: 'putAlias',
@@ -206,12 +209,11 @@ function Article(options) {
         indexSwitch: function (callback) {
             throw  new Error('还没做')
         },
+
         del: function (callback) {
             this.index.del({
                 index: index
             }, callback);
         }
     };
-
-
 }

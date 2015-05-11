@@ -10,6 +10,7 @@
 var debug = require('debug')('server:api:articles:index');
 var _ = require('lodash');
 var config = require('config');
+var sanitizeHtml = require('sanitize-html');
 
 var filter = require('../../lib/middleware');
 var es = require('../../lib/elasticsearch');
@@ -24,6 +25,15 @@ var _type4ArticlesColoums = 'articles_columns';
  * @type {string}
  */
 var SPLIT = '__split__%_';
+
+/**
+ * h
+ * @type {{article_title: {}, content: {fragment_size: number, number_of_fragments: number}}}
+ */
+var hlOpts = {
+    "article_title": {},
+    "content": {"fragment_size": 150, "number_of_fragments": 1}
+};
 
 function _save(body, callback) {
     if (!body) {
@@ -58,13 +68,48 @@ function _save(body, callback) {
 }
 
 /**
+ * highlight resolve    take one hl
+ * @param item
+ * @private
+ */
+function _highlightResolve(item, keys) {
+    if (!item) {
+        return null;
+    }
+
+    var highlight = item['highlight'];
+    if (!highlight) {
+        return null;
+    }
+
+    var rst = {};
+    _.forEach(keys, function (key) {
+        var hl = highlight[key];
+        if (hl) {
+            if (key === 'content') {
+                rst['summary'] = sanitizeHtml(hl[0], {
+                    allowedTags: ['em' ]
+                });
+            } else {
+                rst[key] = hl[0];
+            }
+        }
+    });
+
+
+    //replace summary
+    //take one
+
+    return rst;
+}
+
+/**
  * 对查询字符串解析
  * @param query
  * @returns {{query: {bool: {must: Array}}, facets: {}, from: (*|number), size: (*|number), sort: (*|{})}}
  * @private
  */
 var _qeruyParser = function (query) {
-
 
     var result = {
         query: {
@@ -228,6 +273,14 @@ var _qeruyParser = function (query) {
                 }
             }
         });
+
+        //highlight
+        if (query['highlight']) {
+            result['highlight'] = {
+                "order": "score",
+                "fields": hlOpts
+            };
+        }
     } else {
         result.query.bool.must.push({
             "match_all": {}
@@ -297,6 +350,68 @@ var _qeruyParser = function (query) {
 };
 
 
+/**
+ * 标准结果 解析
+ * @param rst
+ * @returns {*}
+ */
+var _resultResolve = function (rst, opts) {
+    if (!rst) {
+        return null;
+    }
+
+    opts = opts || {};
+
+    //数量
+    var total = rst.hits.total;
+
+    //items
+    var items = _.map(rst.hits.hits, function (item) {
+
+        var data;
+        if (item.fields) {
+            if (_.isArray(item.fields._source)) {
+                //TODO: fields query 返回的是 []
+                data = item.fields._source[0];
+            } else {
+                data = item.fields._source;
+            }
+
+        } else if (item._source) {
+            data = item._source;
+        }
+
+        if (item._id) {
+            if (!data) {
+                data = {};
+            }
+
+            data._id = item._id;
+        }
+
+        //hl
+        if (opts.hl) {
+            var keys = opts.hl.keys;
+            //处理 hl
+            var hl = _highlightResolve(item, keys);
+            //merge
+            if (hl) {
+                _.merge(data, hl);
+            }
+        }
+
+        return  data;
+    });
+
+    var result = {
+        total: total,
+        items: items
+    };
+
+    return result;
+};
+
+
 module.exports = function (router) {
 
     /**
@@ -360,8 +475,16 @@ module.exports = function (router) {
                 return;
             }
 
+            //两个条件
+            var opts = {};
+            if (query.q && query.highlight) {
+                opts['hl'] = {
+                    keys: _.keys(hlOpts)
+                };
+            }
+
             //{items,total}
-            var items = esClient.resultResolve(result);
+            var items = _resultResolve(result, opts);
 
             var result = {status: true, code: 200, data: {total: items.total, data: items.items, size: query.size || 10, from: query.from || 0}};
 
