@@ -478,7 +478,7 @@ module.exports = function (router) {
 
             //两个条件
             var opts = {};
-            if (query.q && query.highlight) {
+            if (query.highlight) {
                 opts['hl'] = {
                     keys: _.keys(hlOpts)
                 };
