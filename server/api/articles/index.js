@@ -36,12 +36,16 @@ var hlOpts = {
     "content": {"fragment_size": 50, "number_of_fragments": 1}
 };
 
-function _htmlComplate(s){
-    var d = S(s);
+function _htmlComplate(s) {
+    var d = S(s).trim();
     var lt = d.indexOf('<');
     var gt = d.indexOf('>');
+    var gt2 = d.indexOf('/>');
 
-    if (gt < lt) {
+    if (gt2 < lt) {
+        s = '<p' + s;
+    }
+    else if (gt < lt) {
         s = '<' + s;
     }
 
@@ -408,7 +412,7 @@ var _resultResolve = function (rst, opts) {
             var keys = opts.hl.keys;
             //处理 hl
             var hl = _highlightResolve(item, keys);
-            debug('hl:%s',JSON.stringify(hl));
+            debug('hl:%s', JSON.stringify(hl));
             //merge
             if (hl) {
                 _.merge(data, hl);
