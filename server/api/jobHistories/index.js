@@ -1,13 +1,14 @@
 /**
  * User: ngnono
- * Date: 15-4-19
- * Time: 下午9:59
+ * Date: 15-5-17
+ * Time: 下午4:20
  * To change this template use File | Settings | File Templates.
  */
 
 'use strict';
 
-var debug = require('debug')('server:api:articlesColumns:index');
+
+var debug = require('debug')('server:api:jobHistories:index');
 var _ = require('lodash');
 
 var filter = require('../../lib/middleware');
@@ -16,7 +17,7 @@ var es = require('../../lib/elasticsearch');
 var esClient = require('../../lib/resourceProxy')({client: es});
 
 var _index = constant.index.name;
-var _type = 'articles_columns';
+var _type = 'job_histories';
 
 
 exports = module.exports = function (router) {
@@ -26,19 +27,14 @@ exports = module.exports = function (router) {
     router.param('id', function (req, res, next, id) {
 
         id = id || '';
-        var ids = id.split('_');
-
-        if (ids.length !== 2) {
-            return next(new Error('failed to load articles(' + id.toString() + ').'));
+        if (!id) {
+            return next(new Error('failed to load job_histories(' + id + ').'));
         }
-
-        var parentId = ids[0];
 
         esClient.get({
             id: id,
             index: _index,
-            type: _type,
-            parent: parentId
+            type: _type
         }, function (err, data) {
             if (err) {
                 console.error(err);
@@ -49,62 +45,19 @@ exports = module.exports = function (router) {
             }
 
             if (!data) {
-                return next(new Error('failed to load articles(' + id.toString() + ').'));
+                return next(new Error('failed to load job_histories(' + id + ').'));
             }
 
             /**
              * 业务对象
              */
-            req.articleColumn = data._source;
-            req.articleColumn._id = data._id;
+            req.jobHistory = data._source;
+            req.jobHistory._id = data._id;
 
             next();
         });
 
         debug('id:%s', id);
-    });
-
-    /**
-     * 批量索引
-     */
-    router.post('/bulk', function (req, res) {
-        var body = [];
-        _.forEach(req.body, function (d) {
-            if (d) {
-                d['parent'] = d['article_id'];
-                body.push(d);
-            }
-        });
-
-        var docs = {
-            index: _index,
-            type: _type,
-            body: body
-        };
-
-        esClient.save(docs, function (err, rst) {
-            if (err) {
-                debug('bulk.err:%s', JSON.stringify(err));
-                var code = err.code || 400;
-                res.status(code);
-                res.json({
-                    status: false,
-                    message: err.message || err,
-                    code: code
-                });
-
-                return;
-            }
-            else {
-                res.status(201);
-                res.json({
-                    status: true,
-                    data: rst,
-                    code: 201
-                });
-            }
-        });
-
     });
 
     /**
@@ -119,8 +72,7 @@ exports = module.exports = function (router) {
             body: body,
             index: _index,
             type: _type,
-            id: id,
-            parent: body['article_id']
+            id: id
         }, function (err, rst) {
             //_id,created=True
             if (err) {
@@ -144,9 +96,6 @@ exports = module.exports = function (router) {
                 });
             }
         });
-
-        //var id = body['article_id'] + '_' + body['column_id'];
-
     });
 
     /**
@@ -178,7 +127,7 @@ exports = module.exports = function (router) {
         esClient.del({
             index: _index,
             type: _type,
-            id: req.articleColumn._id
+            id: req.jobHistory._id
         }, cb);
     });
 
@@ -190,7 +139,7 @@ exports = module.exports = function (router) {
         res.status(200);
         res.json({
             status: true,
-            data: req.articleColumn
+            data: req.jobHistory
         });
 
     });
