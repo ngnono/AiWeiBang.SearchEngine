@@ -11,6 +11,7 @@ var debug = require('debug')('server:api:articles:index');
 var _ = require('lodash');
 var config = require('config');
 var sanitizeHtml = require('sanitize-html');
+var S = require('string');
 
 var filter = require('../../lib/middleware');
 var es = require('../../lib/elasticsearch');
@@ -32,8 +33,20 @@ var SPLIT = '__split__%_';
  */
 var hlOpts = {
     "article_title": {},
-    "content": {"fragment_size": 150, "number_of_fragments": 1}
+    "content": {"fragment_size": 50, "number_of_fragments": 1}
 };
+
+function _htmlComplate(s){
+    var d = S(s);
+    var lt = d.indexOf('<');
+    var gt = d.indexOf('>');
+
+    if (gt < lt) {
+        s = '<' + s;
+    }
+
+    return s;
+}
 
 function _save(body, callback) {
     if (!body) {
@@ -87,7 +100,8 @@ function _highlightResolve(item, keys) {
         var hl = highlight[key];
         if (hl) {
             if (key === 'content') {
-                rst['summary'] = sanitizeHtml(hl[0], {
+                var s = _htmlComplate(hl[0]);
+                rst['summary'] = sanitizeHtml(s, {
                     allowedTags: ['em' ]
                 });
             } else {
