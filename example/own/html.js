@@ -12,7 +12,7 @@ var sanitizeHtml = require('sanitize-html');
 var trimHtml = require('trim-html');
 var S = require('string');
 
-var dirty = ' /> <lass="adfa">各位好,我们每天的三餐搭配都是涵盖了达人和宝宝的菜谱哦，其中<em class="hlt1">中餐</em>和晚<b style="adfadf">餐 </a>';
+var dirty = '<em>aa</em> /> <lass="adfa">各位好,我们每天的三餐搭配都是涵盖了达人和宝宝的菜谱哦，其中<em class="hlt1">中餐</em>和晚<b style="adfadf">餐 </a>';
 var clean = sanitizeHtml(dirty, {
     allowedTags: ['em' ]
 });
