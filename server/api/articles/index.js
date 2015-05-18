@@ -133,7 +133,12 @@ var _qeruyParser = function (query) {
         query: {
             bool: {must: []}
         },
-        facets: {},
+        filter: {
+            bool: {
+                must: []
+            }
+        },
+        //facets: {},
         from: query.from || 0,
         size: query.size || 10,
         sort: []
@@ -228,7 +233,7 @@ var _qeruyParser = function (query) {
                 ranges.forEach(function (r) {
                     var item = rangeParser(ranges, r);
                     if (item !== null) {
-                        result.query.bool.must.push(item);
+                        result.filter.bool.must.push(item);
                     }
                 });
             } else {
@@ -236,7 +241,7 @@ var _qeruyParser = function (query) {
                 keys.forEach(function (r) {
                     var item = rangeParser(ranges, r);
                     if (item !== null) {
-                        result.query.bool.must.push(item);
+                        result.filter.bool.must.push(item);
                     }
                 });
             }
@@ -259,7 +264,7 @@ var _qeruyParser = function (query) {
                 terms.forEach(function (rule) {
                     var item = termParser(terms, rule);
                     if (item !== null) {
-                        result.query.bool.must.push(item);
+                        result.filter.bool.must.push(item);
                     }
                 });
             } else {
@@ -267,7 +272,7 @@ var _qeruyParser = function (query) {
                 keys.forEach(function (rule) {
                     var item = termParser(terms, rule);
                     if (item !== null) {
-                        result.query.bool.must.push(item);
+                        result.filter.bool.must.push(item);
                     }
                 });
             }
@@ -329,12 +334,12 @@ var _qeruyParser = function (query) {
             var childQuery = {
                 has_child: {
                     type: _type4ArticlesColoums,
-                    query: { term: {
+                    filter: { term: {
                         'column_id': specialTermFields.column_id
                     }}
                 }
             };
-            result.query.bool.must.push(childQuery);
+            result.filter.bool.must.push(childQuery);
         }
     }
 
