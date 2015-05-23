@@ -275,24 +275,24 @@ var _qeruyParser = function (query) {
             /**--------------------------------------------
              * 处理所有的Term查询提条件
              --------------------------------------------*/
-            if (_.isArray(terms)) {
-                terms.forEach(function (rule) {
-                    var item = termParser(terms, rule);
-                    if (item !== null) {
-                        result.filter.bool.must.push(item);
-                    }
-                });
-            } else {
+//            if (_.isArray(terms)) {
+//                terms.forEach(function (rule) {
+//                    var item = termParser(terms, rule);
+//                    if (item !== null) {
+//                        result.filter.bool.must.push(item);
+//                    }
+//                });
+//            } else {
 
-                terms = specialHandler(terms);
-                var keys = _.keys(terms);
-                keys.forEach(function (rule) {
-                    var item = termParser(terms, rule);
-                    if (item !== null) {
-                        result.filter.bool.must.push(item);
-                    }
-                });
-            }
+            terms = specialHandler(terms);
+            var keys = _.keys(terms);
+            keys.forEach(function (rule) {
+                var item = termParser(terms, rule);
+                if (item !== null) {
+                    result.filter.bool.must.push(item);
+                }
+            });
+            //}
 
         }
     }
