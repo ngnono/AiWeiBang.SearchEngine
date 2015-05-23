@@ -124,7 +124,7 @@ function _highlightResolve(item, keys) {
 /**
  * 对查询字符串解析
  * @param query
- * @returns {{query: {bool: {must: Array}}, facets: {}, from: (*|number), size: (*|number), sort: (*|{})}}
+ * @returns {{query: {bool: {must: Array}}, filter: {bool: {must: Array}}, from: (*|number), size: (*|number), sort: Array}}
  * @private
  */
 var _qeruyParser = function (query) {
@@ -144,7 +144,8 @@ var _qeruyParser = function (query) {
         sort: []
     };
 
-    var specialTermFields = {'column_id': null};
+    var specialTermFields = {'column_id': null, 'post_user_id': null};
+
 //    var specialRangeFields = {'column_ids': []};
 
     var termParser = function (query, field) {
@@ -247,35 +248,51 @@ var _qeruyParser = function (query) {
             }
         }
 
-        /**
-         * terms
-         */
-        if (must['terms']) {
-            var terms = must['terms'];
+        var specialHandler = function (terms) {
             if (terms['column_id']) {
                 specialTermFields.column_id = terms.column_id;
 
                 delete terms.column_id;
             }
+
+            if (terms['post_user_id']) {
+                specialTermFields.post_user_id = terms.post_user_id;
+
+                delete terms.post_user_id;
+            }
+
+            return terms;
+        };
+
+
+        /**
+         * terms
+         */
+        if (must['terms']) {
+            var terms = must['terms'];
+
+
             /**--------------------------------------------
              * 处理所有的Term查询提条件
              --------------------------------------------*/
-            if (_.isArray(terms)) {
-                terms.forEach(function (rule) {
-                    var item = termParser(terms, rule);
-                    if (item !== null) {
-                        result.filter.bool.must.push(item);
-                    }
-                });
-            } else {
-                var keys = _.keys(terms);
-                keys.forEach(function (rule) {
-                    var item = termParser(terms, rule);
-                    if (item !== null) {
-                        result.filter.bool.must.push(item);
-                    }
-                });
-            }
+//            if (_.isArray(terms)) {
+//                terms.forEach(function (rule) {
+//                    var item = termParser(terms, rule);
+//                    if (item !== null) {
+//                        result.filter.bool.must.push(item);
+//                    }
+//                });
+//            } else {
+
+            terms = specialHandler(terms);
+            var keys = _.keys(terms);
+            keys.forEach(function (rule) {
+                var item = termParser(terms, rule);
+                if (item !== null) {
+                    result.filter.bool.must.push(item);
+                }
+            });
+            //}
 
         }
     }
@@ -289,11 +306,10 @@ var _qeruyParser = function (query) {
      --------------------------------------------*/
     if (query['q']) {
         result.query.bool.must.push({
-            "match": {
-                "q": {
-                    "query": query.q,
-                    "operator": "and"
-                }
+            "multi_match": {                  //match :{ "q":{"query":"","operator":"and"}}
+                "query": query.q,
+                "operator": "and",
+                "fields": ["article_title^10", "content"]
             }
         });
 
@@ -341,6 +357,15 @@ var _qeruyParser = function (query) {
             };
             result.filter.bool.must.push(childQuery);
         }
+
+        if (specialTermFields.post_user_id) {
+
+            var item = termParser(specialTermFields, 'post_user_id');
+            if (item !== null) {
+                result.query.bool.must.push(item);
+            }
+
+        }
     }
 
     /**
@@ -367,7 +392,7 @@ var _qeruyParser = function (query) {
         result.partial_fields._source['exclude'] = query.exclude_fields;
     }
 
-    debug('queryParser OK');
+    debug('queryParser:%s', JSON.stringify(query));
 
     return result;
 };
