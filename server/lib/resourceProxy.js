@@ -187,13 +187,13 @@ function resource(options) {
             var tasks = [];
             for (var i = 0; i < keys.length; i++) {
                 var q = buildUpdateBody(i);
-                debug('_updatePart.q:', JSON.stringify(q));
+                debug('_updatePart.q:%s,i:%s', JSON.stringify(q),i);
                 tasks.push(function (cb) {
                     _update(q, cb);
                 });
             }
 
-
+            debug('tasks.lenght:%s',tasks.length);
             async.series(tasks, callback);
 
             //_update(q, callback);
