@@ -184,11 +184,13 @@ function resource(options) {
             };
 
             var tasks = [];
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                var q1 = buildUpdateBody(key);
-                debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q1),i,key);
+            while(keys){
+
+
                 tasks.push(function (cb) {
+                    var key = keys.shift();
+                    var q1 = buildUpdateBody(key);
+                    debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q1),i,key);
                     _update(q1, cb);
                 });
             }
