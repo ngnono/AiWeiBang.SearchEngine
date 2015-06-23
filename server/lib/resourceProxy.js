@@ -10,6 +10,7 @@
 var _ = require('lodash');
 var S = require('string');
 var debug = require('debug')('server:lib:resource_proxy');
+var async = require('async');
 
 function noop() {
 }
@@ -159,30 +160,43 @@ function resource(options) {
             var values = opts.params;
             var keys = _.keys(values);
 
-            var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
+            var buildUpdateBody = function (index) {
+                var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
 
-            var s = S(scriptTemplate).template({field: keys[0]}).s;
+                var key = keys[index];
+                var params = values;
+                var upsert = params;
 
-//            var params = {};
-//            _.forEach(keys, function (k) {
-//                params[k + '_'] = values[k];
-//            });
+                var s = S(scriptTemplate).template({field: key}).s;
 
+                var q = {
+                    index: opts.index,
+                    type: opts.type,
+                    id: opts.id,
+                    body: {
+                        script: s,//'update_partial_read_num_script',
+                        params: params,
+                        upsert: upsert,
+                        lang: 'groovy'
+                    }
+                };
 
-            var q = {
-                index: opts.index,
-                type: opts.type,
-                id: opts.id,
-                body: {
-                    script: s,//'update_partial_read_num_script',
-                    params: values,
-                    "lang": "groovy"
-                }
+                return q;
             };
 
-            debug('_updatePart.q:', JSON.stringify(q));
+            var tasks = [];
+            for (var i = 0; i < keys.length; i++) {
+                var q = buildUpdateBody(i);
+                debug('_updatePart.q:', JSON.stringify(q));
+                tasks.push(function (cb) {
+                    _update(q, cb);
+                });
+            }
 
-            _update(q, callback);
+
+            async.parallel(tasks, callback);
+
+            //_update(q, callback);
 
         },
 
