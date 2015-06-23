@@ -160,10 +160,9 @@ function resource(options) {
             var values = opts.params;
             var keys = _.keys(values);
 
-            var buildUpdateBody = function (index) {
+            var buildUpdateBody = function (key) {
                 var scriptTemplate = 'ctx._source.{{field}} = {{field}}';
 
-                var key = keys[index];
                 var params = values;
                 var upsert = params;
 
@@ -186,8 +185,9 @@ function resource(options) {
 
             var tasks = [];
             for (var i = 0; i < keys.length; i++) {
-                var q = buildUpdateBody(i);
-                debug('_updatePart.q:%s,i:%s', JSON.stringify(q),i);
+                var key = keys[i];
+                var q = buildUpdateBody(key);
+                debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q),i,key);
                 tasks.push(function (cb) {
                     _update(q, cb);
                 });
