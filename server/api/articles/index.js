@@ -626,7 +626,7 @@ module.exports = function (router) {
     /**
      * 增量更新 ID下的某字段
      */
-    router.post('/:id/partial/', function (req, res) {
+    router.post('/:id/partial/', function (req, res){
         var body = req.body;
         var model = req.article;
 
@@ -664,6 +664,7 @@ module.exports = function (router) {
 
         debug('partial.id:%s', model.article_id);
         debug('partial.model:%s', JSON.stringify(model));
+        debug('partial.params:%s',JSON.stringify(params));
 
         var opts = {
             index: _index,
