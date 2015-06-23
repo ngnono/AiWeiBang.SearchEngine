@@ -195,7 +195,7 @@ function resource(options) {
             }
 
             debug('tasks.lenght:%s', tasks.length);
-            async.parallel(tasks, callback);
+            async.series(tasks, callback);
 
             //_update(q, callback);
 
