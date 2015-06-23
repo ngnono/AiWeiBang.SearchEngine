@@ -186,10 +186,10 @@ function resource(options) {
             var tasks = [];
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
-                var q = buildUpdateBody(key);
+                var q1 = buildUpdateBody(key);
                 debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q),i,key);
                 tasks.push(function (cb) {
-                    _update(q, cb);
+                    _update(q1, cb);
                 });
             }
 
