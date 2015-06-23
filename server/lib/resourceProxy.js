@@ -187,7 +187,7 @@ function resource(options) {
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
                 var q1 = buildUpdateBody(key);
-                debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q),i,key);
+                debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q1),i,key);
                 tasks.push(function (cb) {
                     _update(q1, cb);
                 });
