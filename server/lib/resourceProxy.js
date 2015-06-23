@@ -184,18 +184,17 @@ function resource(options) {
             };
 
             var tasks = [];
-            while(keys){
-
-
+            for (var i = 0; i < keys.length; i++) {
+                debug('_updatePart.i:%s', i);
                 tasks.push(function (cb) {
                     var key = keys.shift();
                     var q1 = buildUpdateBody(key);
-                    debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q1),i,key);
+                    debug('_updatePart.q:%s,i:%s,key:%s', JSON.stringify(q1), i, key);
                     _update(q1, cb);
                 });
             }
 
-            debug('tasks.lenght:%s',tasks.length);
+            debug('tasks.lenght:%s', tasks.length);
             async.series(tasks, callback);
 
             //_update(q, callback);
