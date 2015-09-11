@@ -350,12 +350,12 @@ var _qeruyParser = function (query) {
             var childQuery = {
                 has_child: {
                     type: _type4ArticlesColoums,
-                    filter: { term: {
+                    query: { term: {
                         'column_id': specialTermFields.column_id
                     }}
                 }
             };
-            result.filter.bool.must.push(childQuery);
+            result.query.bool.must.push(childQuery);
         }
 
         if (specialTermFields.post_user_id) {
