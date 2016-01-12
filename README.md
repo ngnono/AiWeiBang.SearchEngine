@@ -1,6 +1,6 @@
 #  [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-url]][daviddm-image]
 
-> The best module ever.
+> 该版本有性能问题，请慎重使用，新版本已回归GITLAB.
 
 
 ## Install
